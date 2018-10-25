@@ -63,6 +63,16 @@ bool HelloWorld::init()
 
     menu->addChild(showAdItem, 1);
 
+    // Add show ad button
+    auto showBannerItem = MenuItemImage::create(
+                                            "UnityChan_logo.png",
+                                            "UnityChan_logo.png",
+                                            CC_CALLBACK_1(HelloWorld::showUnityBannerFunc, this));
+    
+    showBannerItem->setPosition(Vec2(origin.x + showBannerItem->getContentSize().width + 200,
+                                 origin.y + showBannerItem->getContentSize().height + 20));
+    
+    menu->addChild(showBannerItem, 1);
 
     /////////////////////////////
     // 3. add your codes below...
@@ -106,7 +116,7 @@ void HelloWorld::initUnityAdsFunc()
     const char* gameId = "1055529"; // for Android
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    gameId = "1076532";
+    gameId = "1055530";
 #endif
     
     UnityAdsInit(gameId, false);
@@ -123,11 +133,24 @@ void HelloWorld::showUnityAdsFunc(Ref* pSender)
     }
 }
 
+void HelloWorld::showUnityBannerFunc(Ref* pSender)
+{
+    const char* bannerPlacement = "banner";
+    
+    if(UnityAdsBannerShown(bannerPlacement))
+    {
+        UnityAdsHideBanner(bannerPlacement);
+    }
+    else{
+        UnityAdsShowBanner(bannerPlacement);
+    }
+}
+
 void HelloWorld::rewardPlayer(const char *placementId)
 {
 
     CCLOG("[UnityAds cpp test] rewarded");
-    const char* targetStr = "rewardedVideo";
+    const char* targetStr = "banner";
     if(strcmp(placementId, targetStr) == 0){
         if(titleLabel){
             const char* text = "Congrats!";

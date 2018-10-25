@@ -25,6 +25,9 @@ extern "C" {
         extern void UnityAdsInit(const char* parameter, bool testMode);
         extern bool UnityAdsIsReady (const char* parameter);
         extern void UnityAdsShow (const char* parameter);
+   extern void UnityAdsShowBanner(const char *parameter);
+   extern void UnityAdsHideBanner(const char *parameter);
+    extern bool UnityAdsBannerShown(const char *parameter);
 
         // Unity Ads assist methods
         extern bool UnityAdsGetDebugMode();
@@ -42,6 +45,9 @@ extern "C" {
         void UnityAdsInit (const char *parameter, bool testMode);
         bool UnityAdsIsReady (const char *parameter);
         void UnityAdsShow (const char *parameter);
+    void UnityAdsShowBanner(const char *parameter);
+    void UnityAdsHideBanner(const char *parameter);
+    bool UnityAdsBannerShown(const char *parameter);
     
         // Unity Ads assist methods
         bool UnityAdsGetDebugMode();

@@ -18,4 +18,7 @@
 
 + (UnityAdsBridge* ) viewController;
 
+@property(strong, nonatomic) UIView *bannerView;
+
+
 @end

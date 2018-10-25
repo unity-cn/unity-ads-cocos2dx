@@ -12,6 +12,8 @@
 #import "HelloWorldScene.h"
 #import <UnityAds/UnityAds.h>
 
+static BOOL bannerShown = NO;
+
 @implementation UnityAdsBridge
 
 + (UIViewController* ) viewController {
@@ -70,21 +72,27 @@ NSLog(@"[UnityAds delegate] placementContentReady with placementId=%@", placemen
 - (void)unityAdsBannerDidHide:(nonnull NSString *)placementId {
     
     NSLog(@"[UnityAds delegate] unityAdsBannerDidHide with placementId=%@", placementId);
+    bannerShown = NO;
 }
 
 - (void)unityAdsBannerDidLoad:(nonnull NSString *)placementId view:(nonnull UIView *)view {
     
     NSLog(@"[UnityAds delegate] unityAdsBannerDidLoad with placementId=%@", placementId);
+    self.bannerView = view;
+    [[[UnityAdsBridge viewController] view] addSubview:self.bannerView];
 }
 
 - (void)unityAdsBannerDidShow:(nonnull NSString *)placementId {
     
     NSLog(@"[UnityAds delegate] unityAdsBannerDidShow with placementId=%@", placementId);
+    bannerShown = YES;
 }
 
 - (void)unityAdsBannerDidUnload:(nonnull NSString *)placementId {
     
     NSLog(@"[UnityAds delegate] unityAdsBannerDidUnload with placementId=%@", placementId);
+    bannerShown = NO;
+    self.bannerView = nil;
 }
 
 - (void)unityServicesDidError:(UnityServicesError)error withMessage:(nonnull NSString *)message {
@@ -105,6 +113,7 @@ void UnityAdsInit (const char *gameIdParameter, bool testMode) {
     
     UnityAdsBridge* bridge = [UnityAdsBridge new];
     NSString* gameId = [NSString stringWithFormat:@"%s", gameIdParameter];
+    [UnityAdsBanner setDelegate:bridge];
     [UnityMonetization initialize:gameId delegate:bridge testMode:testMode];
 }
 
@@ -120,6 +129,22 @@ void UnityAdsShow (const char *parameter){
     if ([placementContent isKindOfClass:[UMONShowAdPlacementContent class]]) {
         [(UMONShowAdPlacementContent *)placementContent show:[UnityAdsBridge viewController] withDelegate:[UnityAdsBridge viewController]];
     }
+}
+
+
+void UnityAdsShowBanner(const char *parameter){
+    
+    NSString* placementId = [NSString stringWithFormat:@"%s", parameter];
+    [UnityAdsBanner loadBanner:placementId];
+}
+
+void UnityAdsHideBanner(const char *parameter){
+    [UnityAdsBanner destroy];
+}
+
+
+bool UnityAdsBannerShown(const char *parameter){
+    return bannerShown;
 }
 
 bool UnityAdsGetDebugMode() {

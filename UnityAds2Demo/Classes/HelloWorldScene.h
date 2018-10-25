@@ -25,6 +25,7 @@ public:
     void rewardPlayer(const char *placementId);
     void initUnityAdsFunc();
     void showUnityAdsFunc(Ref* pSender);
+    void showUnityBannerFunc(Ref* pSender);
 };
 
 #endif // __HELLOWORLD_SCENE_H__
