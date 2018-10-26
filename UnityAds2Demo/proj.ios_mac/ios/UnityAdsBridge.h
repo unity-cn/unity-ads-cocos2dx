@@ -12,13 +12,10 @@
 #import <UnityAds/UnityMonetization.h>
 #import <UnityAds/UADSBanner.h>
 
-
-
 @interface UnityAdsBridge : UIViewController<UnityMonetizationDelegate, UnityAdsBannerDelegate, UMONShowAdDelegate>
 
 + (UnityAdsBridge* ) viewController;
-
++ (id) sharedUnityAdsBridge;
 @property(strong, nonatomic) UIView *bannerView;
-
 
 @end

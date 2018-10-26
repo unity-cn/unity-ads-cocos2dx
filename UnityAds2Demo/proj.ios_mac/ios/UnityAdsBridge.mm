@@ -24,8 +24,17 @@ static BOOL bannerShown = NO;
     return rootController;
 }
 
++ (id)sharedUnityAdsBridge {
+    static UnityAdsBridge *sharedUnityAdsBridge = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedUnityAdsBridge = [[self alloc] init];
+    });
+    return sharedUnityAdsBridge;
+}
+
 #pragma mark -
-#pragma mark UnityAdsDelegate
+#pragma mark UMONShowAdDelegate
 
 - (void)unityAdsDidStart:(NSString *)placementId{
     NSLog(@"[UnityMonetization delegate] unityAdsDidStart with placementId=%@", placementId);
@@ -33,9 +42,8 @@ static BOOL bannerShown = NO;
 
 - (void)unityAdsDidFinish:(NSString *)placementId
           withFinishState:(UnityAdsFinishState)state{
-    
     NSLog(@"[UnityMonetization delegate] unityAdsDidFinish with placementId=%@ finishState=%ld", placementId, (long)state);
-    
+        
     if(state == kUnityAdsFinishStateCompleted) {
         auto scene = cocos2d::Director::getInstance()->getRunningScene()->getChildren().at(1);
         if (typeid(*scene) == typeid(HelloWorld)) {
@@ -105,10 +113,11 @@ void UnityAdsInit (const char *gameIdParameter, bool testMode) {
     
     NSLog(@"[UnityMonetization] UnityAdsInit");
     
-    UnityAdsBridge* bridge = [UnityAdsBridge new];
+    UnityAdsBridge* bridge = [UnityAdsBridge sharedUnityAdsBridge];
     NSString* gameId = [NSString stringWithFormat:@"%s", gameIdParameter];
     [UnityAdsBanner setDelegate:bridge];
     [UnityMonetization initialize:gameId delegate:bridge testMode:testMode];
+    
 }
 
 bool UnityAdsIsReady (const char *parameter){
@@ -122,7 +131,7 @@ void UnityAdsShow (const char *parameter){
     NSString* placementId = [NSString stringWithFormat:@"%s", parameter];
     UMONPlacementContent* placementContent = [UnityMonetization getPlacementContent:placementId];
     if ([placementContent isKindOfClass:[UMONShowAdPlacementContent class]]) {
-        [(UMONShowAdPlacementContent *)placementContent show:[UnityAdsBridge viewController] withDelegate:[UnityAdsBridge viewController]];
+        [(UMONShowAdPlacementContent *)placementContent show:[UnityAdsBridge viewController] withDelegate:[UnityAdsBridge sharedUnityAdsBridge]];
     }
 }
 

@@ -150,7 +150,7 @@ void HelloWorld::rewardPlayer(const char *placementId)
 {
 
     CCLOG("[UnityAds cpp test] rewarded");
-    const char* targetStr = "banner";
+    const char* targetStr = "rewardedVideo";
     if(strcmp(placementId, targetStr) == 0){
         if(titleLabel){
             const char* text = "Congrats!";
