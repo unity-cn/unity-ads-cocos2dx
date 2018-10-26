@@ -27,17 +27,8 @@ static BOOL bannerShown = NO;
 #pragma mark -
 #pragma mark UnityAdsDelegate
 
-//- (void)unityAdsReady:(NSString *)placementId {
-//    NSLog(@"[UnityAds delegate] unityAdsReady with placementId=%@", placementId);
-//}
-//
-//- (void)unityAdsDidError:(UnityAdsError)error withMessage:(NSString *)message{
-//    NSLog(@"[UnityAds delegate] unityAdsDidError with message=%@ , and error=%ld", message, error);
-//}
-//
-
 - (void)unityAdsDidStart:(NSString *)placementId{
-NSLog(@"[UnityAds delegate] placementContentReady with placementId=%@", placementId);
+NSLog(@"[UnityAds delegate] unityAdsDidStart with placementId=%@", placementId);
 }
 
 - (void)unityAdsDidFinish:(NSString *)placementId
@@ -119,8 +110,9 @@ void UnityAdsInit (const char *gameIdParameter, bool testMode) {
 
 bool UnityAdsIsReady (const char *parameter){
     NSString* placementId = [NSString stringWithFormat:@"%s", parameter];
-    NSLog(@"[UnityAds] UnityAdsIsReady for placement=%@", placementId);
-    return [UnityMonetization isReady:placementId];
+    bool isReady = [UnityMonetization isReady:placementId];
+    NSLog(@"[UnityAds] UnityAdsIsReady for placement=%@ readyState=%@", placementId, isReady?@"True":@"False");
+    return isReady;
 }
 
 void UnityAdsShow (const char *parameter){
