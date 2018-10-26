@@ -28,11 +28,14 @@ static BOOL bannerShown = NO;
 #pragma mark UnityAdsDelegate
 
 - (void)unityAdsDidStart:(NSString *)placementId{
-NSLog(@"[UnityAds delegate] unityAdsDidStart with placementId=%@", placementId);
+    NSLog(@"[UnityMonetization delegate] unityAdsDidStart with placementId=%@", placementId);
 }
 
 - (void)unityAdsDidFinish:(NSString *)placementId
           withFinishState:(UnityAdsFinishState)state{
+    
+    NSLog(@"[UnityMonetization delegate] unityAdsDidFinish with placementId=%@ finishState=%ld", placementId, (long)state);
+    
     if(state == kUnityAdsFinishStateCompleted) {
         auto scene = cocos2d::Director::getInstance()->getRunningScene()->getChildren().at(1);
         if (typeid(*scene) == typeid(HelloWorld)) {
@@ -44,51 +47,51 @@ NSLog(@"[UnityAds delegate] unityAdsDidStart with placementId=%@", placementId);
 }
 
 - (void)placementContentReady:(nonnull NSString *)placementId placementContent:(nonnull UMONPlacementContent *)decision {
-    NSLog(@"[UnityAds delegate] placementContentReady with placementId=%@", placementId);
+    NSLog(@"[UnityMonetization delegate] placementContentReady with placementId=%@", placementId);
 }
 
 - (void)placementContentStateDidChange:(nonnull NSString *)placementId placementContent:(nonnull UMONPlacementContent *)placementContent previousState:(UnityMonetizationPlacementContentState)previousState newState:(UnityMonetizationPlacementContentState)newState {
-    NSLog(@"[UnityAds delegate] placementContentStateDidChange with placementId=%@", placementId);
+    NSLog(@"[UnityMonetization delegate] placementContentStateDidChange with placementId=%@", placementId);
 }
 
 - (void)unityAdsBannerDidClick:(nonnull NSString *)placementId {
-    NSLog(@"[UnityAds delegate] unityAdsBannerDidClick with placementId=%@", placementId);
+    NSLog(@"[UnityMonetization delegate] unityAdsBannerDidClick with placementId=%@", placementId);
 }
 
 - (void)unityAdsBannerDidError:(nonnull NSString *)message {
     
-    NSLog(@"[UnityAds delegate] unityAdsBannerDidError with message=%@", message);
+    NSLog(@"[UnityMonetization delegate] unityAdsBannerDidError with message=%@", message);
 }
 
 - (void)unityAdsBannerDidHide:(nonnull NSString *)placementId {
     
-    NSLog(@"[UnityAds delegate] unityAdsBannerDidHide with placementId=%@", placementId);
+    NSLog(@"[UnityMonetization delegate] unityAdsBannerDidHide with placementId=%@", placementId);
     bannerShown = NO;
 }
 
 - (void)unityAdsBannerDidLoad:(nonnull NSString *)placementId view:(nonnull UIView *)view {
     
-    NSLog(@"[UnityAds delegate] unityAdsBannerDidLoad with placementId=%@", placementId);
+    NSLog(@"[UnityMonetization delegate] unityAdsBannerDidLoad with placementId=%@", placementId);
     self.bannerView = view;
     [[[UnityAdsBridge viewController] view] addSubview:self.bannerView];
 }
 
 - (void)unityAdsBannerDidShow:(nonnull NSString *)placementId {
     
-    NSLog(@"[UnityAds delegate] unityAdsBannerDidShow with placementId=%@", placementId);
+    NSLog(@"[UnityMonetization delegate] unityAdsBannerDidShow with placementId=%@", placementId);
     bannerShown = YES;
 }
 
 - (void)unityAdsBannerDidUnload:(nonnull NSString *)placementId {
     
-    NSLog(@"[UnityAds delegate] unityAdsBannerDidUnload with placementId=%@", placementId);
+    NSLog(@"[UnityMonetization delegate] unityAdsBannerDidUnload with placementId=%@", placementId);
     bannerShown = NO;
     self.bannerView = nil;
 }
 
 - (void)unityServicesDidError:(UnityServicesError)error withMessage:(nonnull NSString *)message {
     
-    NSLog(@"[UnityAds delegate] unityServicesDidError with error=%ld message=%@", error, message);
+    NSLog(@"[UnityMonetization delegate] unityServicesDidError with error=%ld message=%@", error, message);
 }
 
 @end
@@ -100,7 +103,7 @@ NSLog(@"[UnityAds delegate] unityAdsDidStart with placementId=%@", placementId);
 
 void UnityAdsInit (const char *gameIdParameter, bool testMode) {
     
-    NSLog(@"[UnityAds] UnityAdsInit");
+    NSLog(@"[UnityMonetization] UnityAdsInit");
     
     UnityAdsBridge* bridge = [UnityAdsBridge new];
     NSString* gameId = [NSString stringWithFormat:@"%s", gameIdParameter];
@@ -111,7 +114,7 @@ void UnityAdsInit (const char *gameIdParameter, bool testMode) {
 bool UnityAdsIsReady (const char *parameter){
     NSString* placementId = [NSString stringWithFormat:@"%s", parameter];
     bool isReady = [UnityMonetization isReady:placementId];
-    NSLog(@"[UnityAds] UnityAdsIsReady for placement=%@ readyState=%@", placementId, isReady?@"True":@"False");
+    NSLog(@"[UnityMonetization] UnityAdsIsReady for placement=%@ readyState=%@", placementId, isReady?@"True":@"False");
     return isReady;
 }
 
@@ -145,22 +148,22 @@ bool UnityAdsGetDebugMode() {
 }
 
 std::string UnityAdsGetPlacementState(const char* parameter) {
-    NSLog(@"[UnityAds] UnityAdsGetPlacementState");
+    NSLog(@"[UnityMonetization] UnityAdsGetPlacementState");
     NSString* placementId = [NSString stringWithFormat:@"%s", parameter];
     UMONPlacementContent *placementContent = [UnityMonetization getPlacementContent:placementId];
     
     UnityMonetizationPlacementContentState state = [placementContent state];
     switch(state){
         case kPlacementContentStateReady:
-            return "kUnityAdsPlacementStateReady";
+            return "kPlacementContentStateReady";
         case kPlacementContentStateNoFill:
-            return "kUnityAdsPlacementStateNoFill";
+            return "kPlacementContentStateNoFill";
         case kPlacementContentStateWaiting:
-            return "kUnityAdsPlacementStateWaiting";
+            return "kPlacementContentStateWaiting";
         case kPlacementContentStateDisabled:
-            return "kUnityAdsPlacementStateDisabled";
+            return "kPlacementContentStateDisabled";
         case kPlacementContentStateNotAvailable:
-            return "kUnityAdsPlacementStateNotAvailable";
+            return "kPlacementContentStateNotAvailable";
     }
 }
 
