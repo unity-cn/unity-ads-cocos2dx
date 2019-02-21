@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2015 Chukong Technologies Inc.
+Copyright (c) 2015-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -114,9 +115,13 @@ public:
      */
     struct Triangle
     {
-        Triangle(Vec3 p1, Vec3 p2, Vec3 p3);
-        bool getInsterctPoint(const Ray &ray, Vec3& interScetPoint) const;
-        void transform(Mat4 matrix);
+        Triangle(const Vec3& p1, const Vec3& p2, const Vec3& p3);
+        bool getIntersectPoint(const Ray& ray, Vec3& intersectPoint) const;
+
+        /** @deprecated Use getIntersectPoint instead. */
+        CC_DEPRECATED_ATTRIBUTE bool getInsterctPoint(const Ray& ray, Vec3& interScetPoint) const;
+
+        void transform(const Mat4& matrix);
         Vec3 _p1, _p2, _p3;
     };
 
@@ -181,11 +186,11 @@ private:
     {
         /*constructor*/
         TerrainVertexData(){};
-        TerrainVertexData(Vec3 v1, Tex2F v2)
+        TerrainVertexData(const Vec3& v1, const Tex2F& v2)
         {
             _position = v1;
             _texcoord = v2;
-        };
+        }
         /*the vertex's attributes*/
         cocos2d::Vec3 _position;
         cocos2d::Tex2F _texcoord;
@@ -232,7 +237,10 @@ private:
         /**calculate the average slop of chunk*/
         void calculateSlope();
 
-        bool getInsterctPointWithRay(const Ray& ray, Vec3 &interscetPoint);
+        bool getIntersectPointWithRay(const Ray& ray, Vec3& intersectPoint);
+
+        /** @deprecated Use getIntersectPointWithRay instead. */
+        CC_DEPRECATED_ATTRIBUTE bool getInsterctPointWithRay(const Ray& ray, Vec3& intersectPoint);
 
         /**current LOD of the chunk*/
         int _currentLod;
@@ -323,7 +331,7 @@ public:
     static Terrain * create(TerrainData &parameter, CrackFixedType fixedType = CrackFixedType::INCREASE_LOWER);
     /**get specified position's height mapping to the terrain,use bi-linear interpolation method
      * @param x the X position
-     * @param y the Z position
+     * @param z the Z position
      * @param normal the specified position's normal vector in terrain . if this argument is NULL or nullptr,Normal calculation shall be skip.
      * @return the height value of the specified position of the terrain, if the (X,Z) position is out of the terrain bounds,it shall return 0;
      **/
@@ -334,7 +342,7 @@ public:
      * @param normal the specified position's normal vector in terrain . if this argument is NULL or nullptr,Normal calculation shall be skip.
      * @return the height value of the specified position of the terrain, if the (X,Z) position is out of the terrain bounds,it shall return 0;
      **/
-    float getHeight(Vec2 pos, Vec3*Normal = nullptr) const;
+    float getHeight(const Vec2& pos, Vec3* normal = nullptr) const;
 
     /**get the normal of the specified position in terrain
      * @return the normal vector of the specified position of the terrain.
@@ -387,7 +395,7 @@ public:
     /**
      * Convert a world Space position (X,Z) to terrain space position (X,Z)
      */
-    Vec2 convertToTerrainSpace(Vec2 worldSpace) const;
+    Vec2 convertToTerrainSpace(const Vec2& worldSpace) const;
 
     /**
      * reset the heightmap data.
@@ -424,7 +432,7 @@ public:
     /**
      * get the terrain's size
      */
-    Size getTerrainSize() const { return Size(_imageWidth, _imageHeight); }
+    Size getTerrainSize() const { return Size(static_cast<float>(_imageWidth), static_cast<float>(_imageHeight)); }
     
     /**
      * get the terrain's height data
@@ -442,7 +450,7 @@ protected:
      * recursively set each chunk's LOD
      * @param cameraPos the camera position in world space
      **/
-    void setChunksLOD(Vec3 cameraPos);
+    void setChunksLOD(const Vec3& cameraPos);
 
     /**
      * load Vertices from height filed for the whole terrain.
@@ -501,7 +509,7 @@ protected:
     Mat4 _terrainModelMatrix;
     GLuint _normalLocation;
     GLuint _positionLocation;
-    GLuint _texcordLocation;
+    GLuint _texcoordLocation;
     float _maxHeight;
     float _minHeight;
     CrackFixedType _crackFixedType;
@@ -516,7 +524,7 @@ protected:
     GLint _lightDirLocation;
     RenderState::StateBlock* _stateBlock;
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID || CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
+#if CC_ENABLE_CACHE_TEXTURE_DATA
     EventListenerCustom* _backToForegroundListener;
 #endif
 };

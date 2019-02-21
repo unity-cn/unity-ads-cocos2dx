@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2013 cocos2d-x.org
 Copyright (c) Microsoft Open Technologies, Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -34,7 +35,7 @@ using namespace Windows::Foundation;
 #include "base/CCDirector.h"
 #include <algorithm>
 #include "platform/CCFileUtils.h"
-#include "CCWinRTUtils.h"
+#include "platform/winrt/CCWinRTUtils.h"
 #include "platform/CCApplication.h"
 #include "tinyxml2/tinyxml2.h"
 
@@ -46,7 +47,7 @@ using namespace Windows::Foundation;
 NS_CC_BEGIN
 
 // sharedApplication pointer
-Application * Application::sm_pSharedApplication = 0;
+Application * Application::sm_pSharedApplication = nullptr;
 
 
 
@@ -57,7 +58,7 @@ Application * Application::sm_pSharedApplication = 0;
 ////////////////////////////////////////////////////////////////////////////////
 
 // sharedApplication pointer
-Application * s_pSharedApplication = 0;
+Application * s_pSharedApplication = nullptr;
 
 Application::Application() :
 m_openURLDelegate(nullptr)
@@ -70,7 +71,7 @@ m_openURLDelegate(nullptr)
 Application::~Application()
 {
     CC_ASSERT(this == sm_pSharedApplication);
-    sm_pSharedApplication = NULL;
+    sm_pSharedApplication = nullptr;
 }
 
 int Application::run()
@@ -90,6 +91,11 @@ void Application::setAnimationInterval(float interval)
     LARGE_INTEGER nFreq;
     QueryPerformanceFrequency(&nFreq);
     m_nAnimationInterval.QuadPart = (LONGLONG)(interval * nFreq.QuadPart);
+}
+
+void Application::setAnimationInterval(float interval, SetIntervalReason reason)
+{
+    setAnimationInterval(interval);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -135,83 +141,9 @@ const char * Application::getCurrentLanguageCode()
 
 LanguageType Application::getCurrentLanguage()
 {
-    LanguageType ret = LanguageType::ENGLISH;
-    
     const char* code = getCurrentLanguageCode();
-    
-    if (strncmp(code, "zh", 2) == 0)
-    {
-        ret = LanguageType::CHINESE;
-    }
-    else if (strncmp(code, "ja", 2) == 0)
-    {
-        ret = LanguageType::JAPANESE;
-    }
-    else if (strncmp(code, "fr", 2) == 0)
-    {
-        ret = LanguageType::FRENCH;
-    }
-    else if (strncmp(code, "it", 2) == 0)
-    {
-        ret = LanguageType::ITALIAN;
-    }
-    else if (strncmp(code, "de", 2) == 0)
-    {
-        ret = LanguageType::GERMAN;
-    }
-    else if (strncmp(code, "es", 2) == 0)
-    {
-        ret = LanguageType::SPANISH;
-    }
-    else if (strncmp(code, "nl", 2) == 0)
-    {
-        ret = LanguageType::DUTCH;
-    }
-    else if (strncmp(code, "ru", 2) == 0)
-    {
-        ret = LanguageType::RUSSIAN;
-    }
-    else if (strncmp(code, "hu", 2) == 0)
-    {
-        ret = LanguageType::HUNGARIAN;
-    }
-    else if (strncmp(code, "pt", 2) == 0)
-    {
-        ret = LanguageType::PORTUGUESE;
-    }
-    else if (strncmp(code, "ko", 2) == 0)
-    {
-        ret = LanguageType::KOREAN;
-    }
-    else if (strncmp(code, "ar", 2) == 0)
-    {
-        ret = LanguageType::ARABIC;
-    }
-    else if (strncmp(code, "nb", 2) == 0)
-    {
-        ret = LanguageType::NORWEGIAN;
-    }
-    else if (strncmp(code, "pl", 2) == 0)
-    {
-        ret = LanguageType::POLISH;
-    }
-    else if (strncmp(code, "tr", 2) == 0)
-    {
-        ret = LanguageType::TURKISH;
-    }
-    else if (strncmp(code, "uk", 2) == 0)
-    {
-        ret = LanguageType::UKRAINIAN;
-    }
-    else if (strncmp(code, "ro", 2) == 0)
-    {
-        ret = LanguageType::ROMANIAN;
-    }
-    else if (strncmp(code, "bg", 2) == 0)
-    {
-        ret = LanguageType::BULGARIAN;
-    }
-    return ret;
+
+    return utils::getLanguageTypeByISO2(code);
 }
 
 Application::Platform  Application::getTargetPlatform()

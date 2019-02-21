@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010 cocos2d-x.org
 Copyright (c) Microsoft Open Technologies, Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -25,7 +26,7 @@ THE SOFTWARE.
 #include "platform/CCCommon.h"
 #include "platform/CCStdC.h"
 #include "platform/winrt/CCGLViewImpl-winrt.h"
-#include "CCWinRTUtils.h"
+#include "platform/winrt/CCWinRTUtils.h"
 
 #if defined(VLD_DEBUG_MEMORY)
 #include <vld.h>

@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2010 cocos2d-x.org
  Copyright (c) Microsoft Open Technologies, Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
  
@@ -43,6 +44,7 @@ NS_CC_BEGIN
 class CC_DLL CCFileUtilsWinRT : public FileUtils
 {
     friend class FileUtils;
+protected:
     CCFileUtilsWinRT();
 public:
     /* override functions */
@@ -50,10 +52,27 @@ public:
     virtual std::string getWritablePath() const;
     virtual bool isAbsolutePath(const std::string& strPath) const;
     virtual std::string getPathForFilename(const std::string& filename, const std::string& resolutionDirectory, const std::string& searchPath) const override;
-    virtual std::string getFullPathForDirectoryAndFilename(const std::string& strDirectory, const std::string& strFilename) const override;
-	virtual std::string getStringFromFile(const std::string& filename) override;
+    virtual std::string getFullPathForFilenameWithinDirectory(const std::string& strDirectory, const std::string& strFilename) const override;
     virtual std::string getSuitableFOpen(const std::string& filenameUtf8) const override;
+    virtual long getFileSize(const std::string &filepath) override;
+	virtual FileUtils::Status getContents(const std::string& filename, ResizableBuffer* buffer) override;
 	static std::string getAppPath();
+
+    /**
+    *  List all files in a directory.
+    *
+    *  @param dirPath The path of the directory, it could be a relative or an absolute path.
+    *  @return File paths in a string vector
+    */
+    virtual std::vector<std::string> listFiles(const std::string& dirPath) const;
+
+    /**
+    *  List all files recursively in a directory.
+    *
+    *  @param dirPath The path of the directory, it could be a relative or an absolute path.
+    *  @return File paths in a string vector
+    */
+    virtual void listFilesRecursively(const std::string& dirPath, std::vector<std::string> *files) const;
 
 private:
     virtual bool isFileExistInternal(const std::string& strFilePath) const override;

@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2013      Zynga Inc.
- Copyright (c) 2013-2015 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -39,6 +40,7 @@ NS_CC_BEGIN
  * @{
  */
 
+#define CC_DEFAULT_FONT_LABEL_SIZE  12
 
 /**
  * @struct TTFConfig
@@ -55,14 +57,24 @@ typedef struct _ttfConfig
     bool distanceFieldEnabled;
     int outlineSize;
 
-    _ttfConfig(const std::string& filePath = "",float size = 12, const GlyphCollection& glyphCollection = GlyphCollection::DYNAMIC,
-        const char *customGlyphCollection = nullptr, bool useDistanceField = false, int outline = 0)
+    bool italics;
+    bool bold;
+    bool underline;
+    bool strikethrough;
+
+    _ttfConfig(const std::string& filePath = "",float size = CC_DEFAULT_FONT_LABEL_SIZE, const GlyphCollection& glyphCollection = GlyphCollection::DYNAMIC,
+        const char *customGlyphCollection = nullptr, bool useDistanceField = false, int outline = 0,
+               bool useItalics = false, bool useBold = false, bool useUnderline = false, bool useStrikethrough = false)
         : fontFilePath(filePath)
         , fontSize(size)
         , glyphs(glyphCollection)
         , customGlyphs(customGlyphCollection)
         , distanceFieldEnabled(useDistanceField)
         , outlineSize(outline)
+        , italics(useItalics)
+        , bold(useBold)
+        , underline(useUnderline)
+        , strikethrough(useStrikethrough)
     {
         if(outline > 0)
         {
@@ -112,6 +124,14 @@ public:
          */
         RESIZE_HEIGHT
     };
+    
+    enum class LabelType {
+        TTF,
+        BMFONT,
+        CHARMAP,
+        STRING_TEXTURE
+    };
+    
     /// @name Creators
     /// @{
 
@@ -292,7 +312,7 @@ public:
     /** Sets the text that this Label is to display.*/
     virtual void setString(const std::string& text) override;
 
-    /** Return the text the Label is displaying.*/
+    /** Return the text the Label is currently displaying.*/
     virtual const std::string& getString() const override {  return _utf8Text; }
 
     /**
@@ -337,7 +357,28 @@ public:
     virtual void enableGlow(const Color4B& glowColor);
 
     /**
-     * Disable all effect to Label.
+     * Enable italics rendering
+     */
+    void enableItalics();
+
+    /**
+     * Enable bold rendering
+     */
+    void enableBold();
+
+    /**
+     * Enable underline
+     */
+    void enableUnderline();
+
+    /**
+     * Enables strikethrough.
+     * Underline and Strikethrough cannot be enabled at the same time.
+     * Strikethrough is like an underline but at the middle of the glyph
+     */
+    void enableStrikethrough();
+    /**
+     * Disable all effect applied to Label.
      * @warning Please use disableEffect(LabelEffect::ALL) instead of this API.
      */
     virtual void disableEffect();
@@ -372,7 +413,7 @@ public:
     /**
     * Return the outline effect size value.
     */
-    int getOutlineSize() const { return _outlineSize; }
+    float getOutlineSize() const { return _outlineSize; }
 
     /**
     * Return current effect type.
@@ -380,7 +421,7 @@ public:
     LabelEffect getLabelEffectType() const { return _currLabelEffect; }
 
     /**
-    * Return current effect color vlaue.
+    * Return current effect color value.
     */
     Color4F getEffectColor() const { return _effectColorF; }
 
@@ -474,7 +515,7 @@ public:
      * Makes the Label exactly this untransformed height.
      *
      * The Label's height be used for text align if the value not equal zero.
-     * The text will display of incomplete when the size of Label not enough to support display all text.
+     * The text will display incomplete if the size of Label is not large enough to display all text.
      */
     void setHeight(float height){ setDimensions(_labelWidth, height); }
     float getHeight() const { return _labelHeight; }
@@ -487,12 +528,12 @@ public:
     virtual void updateContent();
 
     /**
-     * Provides a way to treats each character like a Sprite.
+     * Provides a way to treat each character like a Sprite.
      * @warning No support system font.
      */
     virtual Sprite * getLetter(int lettetIndex);
 
-    /** Makes the Label to clip upper and lower margin for reduce height of Label.*/
+    /** Clips upper and lower margin to reduce height of Label.*/
     void setClipMarginEnabled(bool clipEnabled) { _clipEnabled = clipEnabled; }
 
     bool isClipMarginEnabled() const { return _clipEnabled; }
@@ -512,6 +553,20 @@ public:
 
     void setLineSpacing(float height);
     float getLineSpacing() const;
+    
+    /**
+     Returns type of label
+     
+     @warning Not support system font.
+     @return the type of label
+     @since v3.17.1
+     */
+    LabelType getLabelType() const { return _currentLabelType; }
+    
+    /**
+     Returns font size
+     */
+    float getRenderingFontSize()const;
 
     /**
      * Sets the additional kerning of the Label.
@@ -585,7 +640,7 @@ CC_CONSTRUCTOR_ACCESS:
 protected:
     struct LetterInfo
     {
-        char16_t utf16Char;
+        char32_t utf32Char;
         bool valid;
         float positionX;
         float positionY;
@@ -593,37 +648,30 @@ protected:
         int lineIndex;
     };
 
-    enum class LabelType {
-        TTF,
-        BMFONT,
-        CHARMAP,
-        STRING_TEXTURE
-    };
-
     virtual void setFontAtlas(FontAtlas* atlas, bool distanceFieldEnabled = false, bool useA8Shader = false);
+    bool getFontLetterDef(char32_t character, FontLetterDefinition& letterDef) const;
 
     void computeStringNumLines();
 
     void onDraw(const Mat4& transform, bool transformUpdated);
-    void onDrawShadow(GLProgram* glProgram);
+    void onDrawShadow(GLProgram* glProgram, const Color4F& shadowColor);
     void drawSelf(bool visibleByCamera, Renderer* renderer, uint32_t flags);
 
     bool multilineTextWrapByChar();
     bool multilineTextWrapByWord();
-    bool multilineTextWrap(std::function<int(const std::u16string&, int, int)> lambda);
-    void shrinkLabelToContentSize(std::function<bool(void)> lambda);
+    bool multilineTextWrap(const std::function<int(const std::u32string&, int, int)>& lambda);
+    void shrinkLabelToContentSize(const std::function<bool(void)>& lambda);
     bool isHorizontalClamp();
     bool isVerticalClamp();
-    float getRenderingFontSize()const;
     void rescaleWithOriginalFontSize();
 
     void updateLabelLetters();
     virtual bool alignText();
     void computeAlignmentOffset();
-    bool computeHorizontalKernings(const std::u16string& stringToRender);
+    bool computeHorizontalKernings(const std::u32string& stringToRender);
 
-    void recordLetterInfo(const cocos2d::Vec2& point, char16_t utf16Char, int letterIndex, int lineIndex);
-    void recordPlaceholderInfo(int letterIndex, char16_t utf16Char);
+    void recordLetterInfo(const cocos2d::Vec2& point, char32_t utf32Char, int letterIndex, int lineIndex);
+    void recordPlaceholderInfo(int letterIndex, char32_t utf16Char);
     
     bool updateQuads();
 
@@ -635,9 +683,11 @@ protected:
     void scaleFontSizeDown(float fontSize);
     bool setTTFConfigInternal(const TTFConfig& ttfConfig);
     void setBMFontSizeInternal(float fontSize);
-    bool isHorizontalClamped(float letterPositionX, int lineInex);
+    bool isHorizontalClamped(float letterPositionX, int lineIndex);
     void restoreFontSize();
     void updateLetterSpriteScale(Sprite* sprite);
+    int getFirstCharLen(const std::u32string& utf32Text, int startIndex, int textLen) const;
+    int getFirstWordLen(const std::u32string& utf32Text, int startIndex, int textLen) const;
 
     void reset();
 
@@ -647,7 +697,7 @@ protected:
 
     LabelType _currentLabelType;
     bool _contentDirty;
-    std::u16string _utf16Text;
+    std::u32string _utf32Text;
     std::string _utf8Text;
     int _numberOfLines;
 
@@ -698,8 +748,9 @@ protected:
     QuadCommand _quadCommand;
     CustomCommand _customCommand;
     Mat4  _shadowTransform;
-    GLuint _uniformEffectColor;
-    GLuint _uniformTextColor;
+    GLint _uniformEffectColor;
+    GLint _uniformEffectType; // 0: None, 1: Outline, 2: Shadow; Only used when outline is enabled.
+    GLint _uniformTextColor;
     bool _useDistanceField;
     bool _useA8Shader;
 
@@ -735,6 +786,11 @@ protected:
     float _bmfontScale;
     Overflow _overflow;
     float _originalFontSize;
+
+    bool _boldEnabled;
+    DrawNode* _underlineNode;
+    bool _strikethroughEnabled;
+
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(Label);
 };

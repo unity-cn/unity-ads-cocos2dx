@@ -2,6 +2,7 @@
 * cocos2d-x   http://www.cocos2d-x.org
 *
 * Copyright (c) 2010-2014 - cocos2d-x community
+* Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 *
 * Portions Copyright (c) Microsoft Open Technologies, Inc.
 * All Rights Reserved
@@ -385,13 +386,10 @@ void OpenGLESPage::OnPointerWheelChanged(Object^ sender, PointerEventArgs^ e)
 
 void OpenGLESPage::OnKeyPressed(CoreWindow^ sender, KeyEventArgs^ e)
 {
-    if (!e->KeyStatus.WasKeyDown)
+    //log("OpenGLESPage::OnKeyPressed %d", e->VirtualKey);
+    if (mRenderer)
     {
-        //log("OpenGLESPage::OnKeyPressed %d", e->VirtualKey);
-        if (mRenderer)
-        {
-            mRenderer->QueueKeyboardEvent(WinRTKeyboardEventType::KeyPressed, e);
-        }
+        mRenderer->QueueKeyboardEvent(WinRTKeyboardEventType::KeyPressed, e);
     }
 }
 

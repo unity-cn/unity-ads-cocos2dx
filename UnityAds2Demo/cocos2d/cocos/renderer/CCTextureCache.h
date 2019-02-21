@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -28,7 +29,6 @@ THE SOFTWARE.
 #ifndef __CCTEXTURE_CACHE_H__
 #define __CCTEXTURE_CACHE_H__
 
-#include <string>
 #include <mutex>
 #include <thread>
 #include <condition_variable>
@@ -42,7 +42,6 @@ THE SOFTWARE.
 #include "platform/CCImage.h"
 
 #if CC_ENABLE_CACHE_TEXTURE_DATA
-    #include "platform/CCImage.h"
     #include <list>
 #endif
 
@@ -53,7 +52,7 @@ NS_CC_BEGIN
  * @{
  */
 /*
-* From version 3.0, TextureCache will never to treated as a singleton, it will be owned by director.
+* From version 3.0, TextureCache will never be treated as a singleton, it will be owned by director.
 * All call by TextureCache::getInstance() should be replaced by Director::getInstance()->getTextureCache().
 */
 
@@ -84,6 +83,10 @@ public:
      */
     CC_DEPRECATED_ATTRIBUTE static void reloadAllTextures();
 
+    // ETC1 ALPHA supports.
+    static void setETC1AlphaFileSuffix(const std::string& suffix);
+    static std::string getETC1AlphaFileSuffix();
+
 public:
     /**
      * @js ctor
@@ -100,7 +103,7 @@ public:
      */
     virtual std::string getDescription() const;
 
-//    Dictionary* snapshotTextures();
+    // Dictionary* snapshotTextures();
 
     /** Returns a Texture2D object given an filename.
     * If the filename was not previously loaded, it will create a new Texture2D.
@@ -122,6 +125,8 @@ public:
     */
     virtual void addImageAsync(const std::string &filepath, const std::function<void(Texture2D*)>& callback);
     
+    void addImageAsync(const std::string &path, const std::function<void(Texture2D*)>& callback, const std::string& callbackKey );
+
     /** Unbind a specified bound image asynchronous callback.
      * In the case an object who was bound to an image asynchronous callback was destroyed before the callback is invoked,
      * the object always need to unbind this callback manually.
@@ -202,7 +207,7 @@ public:
      *
      * @return The full path of the file.
      */
-    const std::string getTextureFilePath(Texture2D* texture)const;
+    std::string getTextureFilePath(Texture2D* texture) const;
 
     /** Reload texture from a new file.
     * This function is mainly for editor, won't suggest use it in game for performance reason.
@@ -212,7 +217,7 @@ public:
     *
     * @since v3.10
     */
-    void renameTextureWithKey(const std::string srcName, const std::string dstName);
+    void renameTextureWithKey(const std::string& srcName, const std::string& dstName);
 
 
 private:
@@ -239,6 +244,8 @@ protected:
     int _asyncRefCount;
 
     std::unordered_map<std::string, Texture2D*> _textures;
+
+    static std::string s_etc1AlphaFileSuffix;
 };
 
 #if CC_ENABLE_CACHE_TEXTURE_DATA
@@ -301,6 +308,7 @@ private:
     // find VolatileTexture by Texture2D*
     // if not found, create a new one
     static VolatileTexture* findVolotileTexture(Texture2D *tt);
+    static void reloadTexture(Texture2D* texture, const std::string& filename, Texture2D::PixelFormat pixelFormat);
 };
 
 #endif

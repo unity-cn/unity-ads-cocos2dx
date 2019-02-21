@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010 cocos2d-x.org
 Copyright (c) Microsoft Open Technologies, Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -33,6 +34,7 @@ THE SOFTWARE.
 #include "platform/CCPlatformMacros.h"
 #include <float.h>
 #include <BaseTsd.h>
+#include <cmath>
 
 #ifndef __SSIZE_T
 #define __SSIZE_T
@@ -43,10 +45,6 @@ typedef SSIZE_T ssize_t;
 
 #if !defined(_USE_MATH_DEFINES)
     #define _USE_MATH_DEFINES       // make M_PI can be use
-#endif
-
-#if !defined(isnan)
-    #define isnan   _isnan
 #endif
 
 #if _MSC_VER < 1900

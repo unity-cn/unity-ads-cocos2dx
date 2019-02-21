@@ -1,12 +1,38 @@
+/****************************************************************************
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ 
+ http://www.cocos2d-x.org
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+
 #include "HelloWorldScene.h"
+#include "SimpleAudioEngine.h"
 
 USING_NS_CC;
 
 Scene* HelloWorld::createScene()
 {
+
     // 'scene' is an autorelease object
     auto scene = Scene::create();
-    
+
     // 'layer' is an autorelease object
     auto layer = HelloWorld::create();
 
@@ -17,19 +43,26 @@ Scene* HelloWorld::createScene()
     return scene;
 }
 
+// Print useful error message instead of segfaulting when files are not there.
+static void problemLoading(const char* filename)
+{
+    printf("Error while loading: %s\n", filename);
+    printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in HelloWorldScene.cpp\n");
+}
+
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
 {
     //////////////////////////////
     // 1. super init first
-    if ( !Layer::init() )
+    if ( !Scene::init() )
     {
         return false;
     }
 
     this->initUnityAdsFunc();
 
-    Size visibleSize = Director::getInstance()->getVisibleSize();
+    auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     /////////////////////////////
@@ -38,40 +71,48 @@ bool HelloWorld::init()
 
     // add a "close" icon to exit the progress. it's an autorelease object
     auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
-                                           "CloseSelected.png",
-                                           CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
-    
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
-                                origin.y + closeItem->getContentSize().height/2));
+            "CloseNormal.png",
+            "CloseSelected.png",
+            CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
+
+    if (closeItem == nullptr ||
+        closeItem->getContentSize().width <= 0 ||
+        closeItem->getContentSize().height <= 0)
+    {
+        problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
+    }
+    else
+    {
+        float x = origin.x + visibleSize.width - closeItem->getContentSize().width/2;
+        float y = origin.y + closeItem->getContentSize().height/2;
+        closeItem->setPosition(Vec2(x,y));
+    }
 
     // create menu, it's an autorelease object
     auto menu = Menu::create(closeItem, NULL);
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);
 
-
-
     // Add show ad button
     auto showAdItem = MenuItemImage::create(
-                                           "UnityChan_logo.png",
-                                           "UnityChan_logo.png",
-                                           CC_CALLBACK_1(HelloWorld::showUnityAdsFunc, this));
+            "UnityChan_logo.png",
+            "UnityChan_logo.png",
+            CC_CALLBACK_1(HelloWorld::showUnityAdsFunc, this));
 
     showAdItem->setPosition(Vec2(origin.x + showAdItem->getContentSize().width + 20,
-                                origin.y + showAdItem->getContentSize().height + 20));
+                                 origin.y + showAdItem->getContentSize().height + 20));
 
     menu->addChild(showAdItem, 1);
 
     // Add show ad button
     auto showBannerItem = MenuItemImage::create(
-                                            "UnityChan_logo.png",
-                                            "UnityChan_logo.png",
-                                            CC_CALLBACK_1(HelloWorld::showUnityBannerFunc, this));
-    
+            "UnityChan_logo.png",
+            "UnityChan_logo.png",
+            CC_CALLBACK_1(HelloWorld::showUnityBannerFunc, this));
+
     showBannerItem->setPosition(Vec2(origin.x + showBannerItem->getContentSize().width + 200,
-                                 origin.y + showBannerItem->getContentSize().height + 20));
-    
+                                     origin.y + showBannerItem->getContentSize().height + 20));
+
     menu->addChild(showBannerItem, 1);
 
     /////////////////////////////
@@ -79,53 +120,63 @@ bool HelloWorld::init()
 
     // add a label shows "Hello World"
     // create and initialize a label
-    
+
     titleLabel = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
-    
+
     // position the label on the center of the screen
     titleLabel->setPosition(Vec2(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - titleLabel->getContentSize().height));
+                                 origin.y + visibleSize.height - titleLabel->getContentSize().height));
 
     // add the label as a child to this layer
     this->addChild(titleLabel, 1);
 
     // add "HelloWorld" splash screen"
     auto sprite = Sprite::create("HelloWorld.png");
+    if (sprite == nullptr)
+    {
+        problemLoading("'HelloWorld.png'");
+    }
+    else
+    {
+        // position the sprite on the center of the screen
+        sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
 
-    // position the sprite on the center of the screen
-    sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-
-    // add the sprite as a child to this layer
-    this->addChild(sprite, 0);
-    
+        // add the sprite as a child to this layer
+        this->addChild(sprite, 1);
+    }
     return true;
 }
 
 
 void HelloWorld::menuCloseCallback(Ref* pSender)
 {
+    //Close the cocos2d-x game scene and quit the application
     Director::getInstance()->end();
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    exit(0);
-#endif
+    /*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() as given above,instead trigger a custom event created in RootViewController.mm as below*/
+
+    //EventCustom customEndEvent("game_scene_close_event");
+    //_eventDispatcher->dispatchEvent(&customEndEvent);
+
+
 }
+
 
 void HelloWorld::initUnityAdsFunc()
 {
-    const char* gameId = "1055529"; // for Android
+    const char* gameId = "2690322"; // for Android
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    gameId = "1055530";
+    gameId = "2690323";
 #endif
-    
+
     UnityAdsInit(gameId, false);
 }
 
 void HelloWorld::showUnityAdsFunc(Ref* pSender)
 {
     const char* zoneString = "rewardedVideo";
-    
+
     if(UnityAdsIsReady(zoneString)) {
         UnityAdsShow(zoneString);
     } else {
@@ -136,7 +187,7 @@ void HelloWorld::showUnityAdsFunc(Ref* pSender)
 void HelloWorld::showUnityBannerFunc(Ref* pSender)
 {
     const char* bannerPlacement = "banner";
-    
+
     if(UnityAdsBannerShown(bannerPlacement))
     {
         UnityAdsHideBanner(bannerPlacement);
@@ -158,3 +209,4 @@ void HelloWorld::rewardPlayer(const char *placementId)
         }
     }
 }
+

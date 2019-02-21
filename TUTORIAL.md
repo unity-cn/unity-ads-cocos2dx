@@ -1,4 +1,4 @@
-# Using UnityAds SDK 2.0 Wrapper for Cocos2dx
+# Using UnityAds SDK 3.0 Wrapper for Cocos2dx
 
 In this guide, we assume you already familiar with all Cocos2dx, iOS or Android platform development. So we mainly cover Unity Ads and the Wrapper for Cocos2dx content.
 
@@ -10,7 +10,7 @@ We are using **Android Studio** or **XCode** for this tutorial.
 
 ###[To Get Started](#start)
   1. Create a Game Project in the [Unity Ads Dashboard](https://dashboard.unityads.unity3d.com)
-  2. Download Unity Ads 2.0 for [iOS](https://github.com/Unity-Technologies/unity-ads-ios/releases) or [Android](https://github.com/Unity-Technologies/unity-ads-android/releases).
+  2. Download Unity Ads 3.0 for [iOS](https://github.com/Unity-Technologies/unity-ads-ios/releases) or [Android](https://github.com/Unity-Technologies/unity-ads-android/releases).
 
 ###[Android Setup](#android-header)
   1. [Import Unity Ads](#a1)
@@ -45,7 +45,7 @@ Create a new game project, and enable test mode
 
 At this point you should see a unique (7-digit) game ID that can be used to initialize Unity Ads in your project.
 
-Download the [Unity Ads 2.0 for Android](https://github.com/Unity-Technologies/unity-ads-android/releases).
+Download the [Unity Ads 3.0 for Android](https://github.com/Unity-Technologies/unity-ads-android/releases).
 
 ---
 
@@ -57,7 +57,7 @@ Example project is available [here](https://github.com/Applifier/Unity-Ads-SDK-2
 
 <a name="a1"/>
 ### 1. Import Unity Ads
-From the downloaded Unity Ads 2.0 folder, locate **unity-ads.aar** and import using Android Studio's AAR import tool.
+From the downloaded Unity Ads 3.0 folder, locate **unity-ads.aar** and import using Android Studio's AAR import tool.
 
 
 
@@ -65,46 +65,43 @@ From the downloaded Unity Ads 2.0 folder, locate **unity-ads.aar** and import us
 ### 2. Add Listener & Callbacks
 
 
-For dependency separation purpose, we create **UnityAdsListener** and **UnityAdsJNI** classes for callbacks and expose API to C layer.
+For dependency separation purpose, we create **UnityMonetizationListener** and **UnityMonetizationJNI** classes for callbacks and expose API to C layer.
 
 #### Callbacks
-In **UnityAdsListener.java**, we make this class implements **IUnityAdsListener** interface, and implement all necessary methods.
+In **UnityMonetizationListener.java**, we make this class implements **IUnityAdsListener** interface, and implement all necessary methods.
 
 ```Java
-import com.unity3d.ads.IUnityAdsListener;
-import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.log.DeviceLog;
+package org.cocos2dx.cpp;
 
-/**
- * Created by solomonli on 7/8/16.
- */
-public class UnityAdsListener implements IUnityAdsListener {
+import com.unity3d.services.UnityServices;
+import com.unity3d.services.monetization.IUnityMonetizationListener;
+import com.unity3d.services.monetization.UnityMonetization;
+import com.unity3d.services.monetization.placementcontent.core.PlacementContent;
+import com.unity3d.services.core.log.DeviceLog;
 
+public class UnityMonetizationListener implements IUnityMonetizationListener {
     @Override
-    public void onUnityAdsReady(final String placementId) {
-        DeviceLog.debug("[UnityAds Demo] onUnityAdsReady for placement: " + placementId);
+    public void onPlacementContentReady(String placementId, PlacementContent placementContent) {
+
+        DeviceLog.debug("[UnityMonetization Demo] onPlacementContentReady for placement: " + placementId);
     }
 
     @Override
-    public void onUnityAdsStart(String placementId) {
-        DeviceLog.debug("[UnityAds Demo] onUnityAdsStart for placement: " + placementId);
+    public void onPlacementContentStateChange(String placementId, PlacementContent placementContent, UnityMonetization.PlacementContentState placementContentState, UnityMonetization.PlacementContentState placementContentState1) {
+
+        DeviceLog.debug("[UnityMonetization Demo] onPlacementContentStateChange for placement: " + placementId + " placementContentState: " + placementContentState.toString());
     }
 
     @Override
-    public void onUnityAdsFinish(String placementId, UnityAds.FinishState result) {
-        DeviceLog.debug("[UnityAds Demo] onUnityAdsFinish with FinishState: " + result.name() + " for placement: " + placementId);
-        UnityAdsJNI.reward(placementId);
-    }
+    public void onUnityServicesError(UnityServices.UnityServicesError unityServicesError, String s) {
 
-    @Override
-    public void onUnityAdsError(UnityAds.UnityAdsError error, String message) {
-        DeviceLog.debug("[UnityAds Demo] onUnityAdsError with message: " + message);
+        DeviceLog.debug("[UnityMonetization Demo] onUnityServicesError : " + unityServicesError.toString() + " Error Message: " + s);
     }
 }
 ```
 
 #### APIs
-In **UnityAdsJNI.java**, we try to implement all interfaces Unity Ads SDK exposes to developers, except those really useless for Cocos2dx layer.
+In **UnityMonetizationJNI.java**, we try to implement all interfaces Unity Ads SDK exposes to developers, except those really useless for Cocos2dx layer.
 
 Method list below:
 
@@ -114,6 +111,12 @@ void UnityAdsInitialize(String gameId, boolean testMode)
 boolean UnityAdsIsReady(String placementId)
 
 void UnityAdsShow(String placementId)
+
+void UnityAdsShowBanner(String placementId)
+
+void UnityAdsHideBanner()
+
+boolean UnityAdsBannerShown(String placementId)
 
 boolean UnityAdsGetDebugMode()
 
@@ -133,15 +136,20 @@ For detail implementation, you can find from the wrapper project. As this tutori
 
 
 #### Bind them up
-In **AppActivity.java** (or any activity that will show ads), don't forget to instantiate UnityAdsListener, and assign the Activity and listener to **UnityAdsJNI** class.
+In **AppActivity.java** (or any activity that will show ads), don't forget to instantiate UnityMonetizationListener, and assign the Activity and listener to **UnityMonetizationJNI** class.
 
 ```java  
     @Override
-    protected void onCreate(final Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final UnityAdsListener unityAdsListener = new UnityAdsListener();
-        UnityAdsJNI.activity = this;
-        UnityAdsJNI.unityAdsListener = unityAdsListener;
+        
+        ...
+        
+		// DO OTHER INITIALIZATION BELOW
+        final UnityMonetizationListener unityMonetizationListener = new UnityMonetizationListener();
+        UnityMonetizationJNI.activity = this;
+        UnityMonetizationJNI.unityMonetizationListener = unityMonetizationListener;
+
     }
 ```
 
@@ -229,6 +237,16 @@ bool UnityAdsIsReady (const char *parameter){
 void UnityAdsShow (const char *parameter){
     NSString* placementId = [NSString stringWithFormat:@"%s", parameter];
     [UnityAds show:[UnityAdsBridge viewController] placementId:placementId];
+}
+
+void UnityAdsShowBanner(const char *parameter){
+    
+    NSString* placementId = [NSString stringWithFormat:@"%s", parameter];
+    [UnityAdsBanner loadBanner:placementId];
+}
+
+void UnityAdsHideBanner(const char *parameter){
+    [UnityAdsBanner destroy];
 }
 
 bool UnityAdsGetDebugMode() {
