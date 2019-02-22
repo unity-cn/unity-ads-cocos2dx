@@ -62,7 +62,17 @@ public class UnityMonetizationJNI {
                 @Override
                 public void onAdFinished(String placementId, UnityAds.FinishState withState) {
                     DeviceLog.debug(String.format("[UnityMonetization Demo] onAdFinished for placement: %s, withState: %s", placementId, withState));
-                    reward(placementId);
+                    switch (withState){
+                        case COMPLETED:
+                            reward(placementId);
+                            break;
+                        case SKIPPED:
+                            break;
+                        case ERROR:
+                            break;
+                        default:
+                            break;
+                    }
                 }
             });
         }
