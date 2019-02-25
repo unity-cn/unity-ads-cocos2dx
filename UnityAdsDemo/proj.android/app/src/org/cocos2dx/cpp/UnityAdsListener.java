@@ -43,6 +43,8 @@ public class UnityAdsListener implements IUnityAdsListener, IUnityBannerListener
         bannerView = view;
         activity.addContentView(bannerView,new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
+//Or
+//        ((ViewGroup)(UnityMonetizationJNI.activity.getWindow().getDecorView().getRootView())).addView(view);
     }
 
     @Override

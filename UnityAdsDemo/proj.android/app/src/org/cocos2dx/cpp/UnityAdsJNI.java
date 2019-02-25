@@ -3,6 +3,8 @@ package org.cocos2dx.cpp;
 import android.app.Activity;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.services.banners.*;
+import com.unity3d.services.banners.view.BannerPosition;
+
 import android.util.Log;
 
 public class UnityAdsJNI {
@@ -19,6 +21,7 @@ public class UnityAdsJNI {
             Log.d("Unity cocos2dx Sample","[UnityAds Demo] UnityAdsInitialize failed, no gameId specified");
             return;
         }
+        UnityBanners.setBannerListener(unityAdsListener);
         UnityAds.initialize(activity, gameId, unityAdsListener, testMode);
     }
 
@@ -41,6 +44,7 @@ public class UnityAdsJNI {
 
     public static void UnityAdsShowBanner(String placementId) {
         Log.d("Unity cocos2dx Sample","[UnityAds Demo] UnityAdsShowBanner");
+        UnityBanners.setBannerPosition(BannerPosition.BOTTOM_CENTER);
         if(placementId == null || placementId.isEmpty()) {
             UnityBanners.loadBanner(activity);
         } else if(!UnityAdsIsReady(placementId))
